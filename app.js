@@ -1,6 +1,7 @@
 const inquirer = require('inquirer');
-const fs = require('fs');
-const generatePage = require('./src/page-template');
+// const fs = require('fs');  // removed in last lesson
+const { writeFile, copyFile } = require('./utils/generate-site.js');
+const generatePage = require('./src/page-template.js');
 
 const promptUser = () => {
     return inquirer.prompt([
@@ -56,20 +57,21 @@ const promptProject = portfolioData => {
     if (!portfolioData.projects) {
         portfolioData.projects = [];
     }    
-    return inquirer.prompt([
-        {
-            type: 'input',
-            name: 'name',
-            message: 'What is the name of your project?',
-            validate: nameInput => {
-                if (nameInput) {
-                    return true;
-                } else {
-                    console.log('Please enter your name!');
-                    return false;
+    return inquirer
+        .prompt([
+            {
+                type: 'input',
+                name: 'name',
+                message: 'What is the name of your project?',
+                validate: nameInput => {
+                    if (nameInput) {
+                        return true;
+                    } else {
+                        console.log('Please enter your name!');
+                        return false;
+                    }
                 }
-            }
-        },
+            },
         {
             type: 'input',
             name: 'description', 
@@ -125,19 +127,41 @@ const promptProject = portfolioData => {
     });
 };
 
+
+// promptUser()
+//   .then(promptProject)
+//   .then(portfolioData => {
+//     const pageHTML = generatePage(portfolioData);
+
+//     fs.writeFile('./index.html', pageHTML, err => {
+//       if (err) throw new Error(err);
+
+//       console.log('Page created! Check out index.html in this directory to see it!');
+//     });
+//   });
+
+
 promptUser()
-    .then(promptProject)
-    .then(portfolioData => {
-        const pageHTML = generatePage(portfolioData);
-        fs.writeFile('./index.html', pageHTML, err => {
-            if (err) throw new Error(err);
+  .then(promptProject)
+  .then(portfolioData => {
+    return generatePage(portfolioData);
+  })
+  .then(pageHTML => {
+    return writeFile(pageHTML);
+  })
+  .then(writeFileResponse => {
+    console.log(writeFileResponse);
+    return copyFile();
+  })
+  .then(copyFileResponse => {
+    console.log(copyFileResponse);
+  })
+  .catch(err => {
+    console.log(err);
+  });
 
-            console.log('Page created! Check out index.html in this directory.')
-        });
-    });
 
-
-// mockdata = 
+// const mockData = 
 // {
 //     name: 'Lernantino',
 //     github: 'lernantino',
@@ -183,4 +207,4 @@ promptUser()
 //       }
 //     ]
 //   };
-// const pageHTML = generatePage();
+// const pageHTML = generatePage(mockData);
